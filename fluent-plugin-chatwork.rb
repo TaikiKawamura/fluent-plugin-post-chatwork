@@ -7,19 +7,23 @@ class CharworkOutput < Fluent::Output
   config_param :token, :string, :default => nil
   config_param :room_id, :string, :default => nil
 
+  # まずこのメソッドが呼ばれる
   def emit(tag, es, chain)
     chain.next
     es.each do |time, record|
+      # 一行目にタグ、二行目以降にレコードを出力
       message = "tag: #{tag} \nmessage: #{record}"
       chatworkPost(message)
     end
   end
 
+  # messageをチャットワークにポストする
   def chatworkPost(message)
     uri = "https://api.chatwork.com/v1/rooms/#{@room_id}/messages"
     http_request(uri, {:body => message})
   end
 
+  # postだけしてくれるメソッド
   def http_request(uri, query_hash={})
     query = query_hash.map{|k, v| "#{k}=#{v}"}.join('&')        #ハッシュをオプションの書式に変換
     query_escaped = URI.escape(query)
